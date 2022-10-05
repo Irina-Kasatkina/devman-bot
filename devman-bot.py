@@ -31,11 +31,11 @@ def monitor_devman_attempts(devman_api_token, telegram_bot, telegram_chat_id):
             response = requests.get(url, headers=headers, params=params, timeout=LONG_POLLING_TIMEOUT)
             response.raise_for_status()
 
-            response_payload = response.json()
-            if response_payload['status'] == 'timeout':
-                timestamp = int(response_payload['timestamp_to_request'])
-            elif response_payload['status'] == 'found':
-                for attempt in response_payload['new_attempts']:
+            reviews_monitoring = response.json()
+            if reviews_monitoring['status'] == 'timeout':
+                timestamp = int(reviews_monitoring['timestamp_to_request'])
+            elif reviews_monitoring['status'] == 'found':
+                for attempt in reviews_monitoring['new_attempts']:
                     message = generate_message_on_attempt(attempt)
                     telegram_bot.send_message(chat_id=telegram_chat_id, 
                                               text=message, 
