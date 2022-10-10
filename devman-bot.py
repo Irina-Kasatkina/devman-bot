@@ -33,7 +33,7 @@ def monitor_devman_attempts(devman_api_token, telegram_bot, telegram_chat_id):
 
             reviews_monitoring = response.json()
             if reviews_monitoring['status'] == 'timeout':
-                timestamp = int(reviews_monitoring['timestamp_to_request'])
+                timestamp = float(reviews_monitoring['timestamp_to_request'])
             elif reviews_monitoring['status'] == 'found':
                 for attempt in reviews_monitoring['new_attempts']:
                     message = generate_message_on_attempt(attempt)
