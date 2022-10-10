@@ -41,7 +41,7 @@ def monitor_devman_attempts(devman_api_token, telegram_bot, telegram_chat_id):
     params = {}
     delay = 1
 
-    logger.info('Бот стартовал.')    
+    logger.info('Бот запущен.')
     while True:
         try:
             if timestamp:
@@ -59,11 +59,16 @@ def monitor_devman_attempts(devman_api_token, telegram_bot, telegram_chat_id):
                     telegram_bot.send_message(chat_id=telegram_chat_id, 
                                               text=message, 
                                               parse_mode=telegram.constants.PARSEMODE_HTML)
+            delay = 1
         except requests.exceptions.ReadTimeout:
             continue
         except requests.exceptions.ConnectionError:
             time.sleep(delay)
-            delay = 10
+            delay += 10
+        except Exception as ex:
+            logger.exception(ex)
+            time.sleep(delay)
+            delay += 10
 
 
 def generate_message_on_attempt(attempt):
@@ -86,7 +91,9 @@ def main():
 
     telegram_bot = telegram.Bot(token=telegram_bot_token)
 
+    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logger.setLevel(logging.INFO)
+    print('Хочу запустить handler c другим ботом')
     logger.addHandler(TelegramLogsHandler(telegram_bot_token, telegram_chat_id))
 
     monitor_devman_attempts(devman_api_token, telegram_bot, telegram_chat_id)
