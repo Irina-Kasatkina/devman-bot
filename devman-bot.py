@@ -44,16 +44,16 @@ def monitor_devman_attempts(devman_api_token, telegram_bot, telegram_chat_id):
     logger.info('Бот запущен.')
     while True:
         try:
-            if timestamp:
-                params = {'timestamp': timestamp}
+            params = {'timestamp': timestamp} if timestamp else {}
 
             response = requests.get(url, headers=headers, params=params, timeout=LONG_POLLING_TIMEOUT)
             response.raise_for_status()
 
             reviews_monitoring = response.json()
             if reviews_monitoring['status'] == 'timeout':
-                timestamp = float(reviews_monitoring['timestamp_to_request'])
+                timestamp = reviews_monitoring['timestamp_to_request']
             elif reviews_monitoring['status'] == 'found':
+                timestamp = reviews_monitoring['last_attempt_timestamp']
                 for attempt in reviews_monitoring['new_attempts']:
                     message = generate_message_on_attempt(attempt)
                     telegram_bot.send_message(chat_id=telegram_chat_id, 
@@ -93,7 +93,6 @@ def main():
 
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logger.setLevel(logging.INFO)
-    print('Хочу запустить handler c другим ботом')
     logger.addHandler(TelegramLogsHandler(telegram_bot_token, telegram_chat_id))
 
     monitor_devman_attempts(devman_api_token, telegram_bot, telegram_chat_id)
