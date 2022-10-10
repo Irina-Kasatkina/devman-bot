@@ -3,6 +3,7 @@
 """Отслеживает проверку работ на dvmn.org и информирует пользователя в telegram-чате."""
 
 import json
+import logging
 import os
 import time
 
@@ -12,7 +13,23 @@ import telegram.error
 from dotenv import load_dotenv
 
 
+logger = logging.getLogger('devman_bot.logger')
+
+
 LONG_POLLING_TIMEOUT = 100
+
+
+class TelegramLogsHandler(logging.Handler):
+    """Перенаправляет логи бота в чат Telegram."""
+
+    def __init__(self, telegram_bot_token, telegram_chat_id):
+        super().__init__()
+        self.bot = telegram.Bot(token=telegram_bot_token)
+        self.chat_id = telegram_chat_id
+
+    def emit(self, record):
+        log_entry = self.format(record)
+        self.bot.send_message(chat_id=self.chat_id, text=log_entry)
 
 
 def monitor_devman_attempts(devman_api_token, telegram_bot, telegram_chat_id):
@@ -23,6 +40,8 @@ def monitor_devman_attempts(devman_api_token, telegram_bot, telegram_chat_id):
     timestamp = 0
     params = {}
     delay = 1
+
+    logger.info('Бот стартовал.')    
     while True:
         try:
             if timestamp:
@@ -66,6 +85,10 @@ def main():
     telegram_chat_id = os.environ['TELEGRAM_CHAT_ID']
 
     telegram_bot = telegram.Bot(token=telegram_bot_token)
+
+    logger.setLevel(logging.INFO)
+    logger.addHandler(TelegramLogsHandler(telegram_bot_token, telegram_chat_id))
+
     monitor_devman_attempts(devman_api_token, telegram_bot, telegram_chat_id)
 
 
