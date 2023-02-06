@@ -33,7 +33,7 @@
 
 2. Создать docker-образ:
 	```
-	docker build <имя_docker-образа> .
+	docker build . --tag <имя_docker-образа>
 	```
 	(вместо `<имя_docker-образа>` подставьте любое имя для создаваемого docker-образа, например `python-docker`).
 
